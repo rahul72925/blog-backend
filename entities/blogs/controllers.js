@@ -66,3 +66,24 @@ export const updateBlog = async (req, res) => {
     });
   }
 };
+
+export const likeBlog = async (req, res) => {
+  try {
+    const { blogId } = req.query;
+
+    await sql`update blogs set likes = likes + 1 where id = ${blogId};`;
+
+    return res.status(200).json({
+      success: true,
+      message: "Like successfully",
+    });
+  } catch (error) {
+    console.log("like blog error", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
