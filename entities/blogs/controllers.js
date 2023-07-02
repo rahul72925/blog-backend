@@ -87,3 +87,29 @@ export const likeBlog = async (req, res) => {
     });
   }
 };
+
+export const commentOnBlog = async (req, res) => {
+  try {
+    const commenterUserId = req.userId;
+    const { blogId } = req.query;
+
+    const { comment, parentCommentId = null } = req.body;
+
+    await sql`
+    insert into comments (id, comment, parent_comment_id, blog_id, user_id, created_at, updated_at, is_archived) 
+                    values(${uuidv4()}, ${comment}, ${parentCommentId}, ${blogId}, ${commenterUserId}, now(), now(), false);
+    `;
+
+    res.status(200).json({
+      success: true,
+      message: "comment successfully",
+    });
+  } catch (error) {
+    console.log("comment error", error);
+    return res.status(500).json({
+      success: false,
+      message: "something went wrong",
+      error,
+    });
+  }
+};
