@@ -2,6 +2,8 @@ import express from "express";
 import {
   commentOnBlog,
   createBlog,
+  deleteBlog,
+  deleteComment,
   likeBlog,
   updateBlog,
 } from "./controllers.js";
@@ -14,5 +16,8 @@ blogRouter.post("/update-blog", validateJWT, updateBlog);
 
 blogRouter.post("/like", validateJWT, likeBlog);
 blogRouter.post("/comment", validateJWT, commentOnBlog);
+
+blogRouter.delete("/", validateJWT, deleteBlog);
+blogRouter.delete("/comment/delete", validateJWT, deleteComment);
 
 export { blogRouter };

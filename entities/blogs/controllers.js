@@ -113,3 +113,69 @@ export const commentOnBlog = async (req, res) => {
     });
   }
 };
+
+export const deleteBlog = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { blogId } = req.query;
+
+    if (!blogId) {
+      return res.status(422).json({
+        success: false,
+        message: "blog id not available",
+      });
+    }
+
+    await sql`update blogs set is_archived = true where id =${blogId} and user_id=${userId};`;
+
+    res.status(200).json({
+      success: true,
+      message: "blog deleted successfully",
+    });
+  } catch (error) {
+    console.log("delete Blog Error", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something Went Wrong ",
+      error,
+    });
+  }
+};
+
+export const deleteComment = async (req, res) => {
+  try {
+    // comment can be delete by blog author or commenter
+    const userId = req.userId;
+
+    const { blogId, commentId } = req.query;
+
+    if (!blogData || !commentId) {
+      return res.status(422).json({
+        success: false,
+        message: "blogId or commentId is not available",
+      });
+    }
+
+    const blogData =
+      await sql`select count(*) from blogs where id = ${blogId} and user_id = ${userId}`;
+
+    if (+blogData[0].count == 0) {
+      await sql`update comments set is_archived = true where id = ${commentId} and user_id = ${userId} or parent_comment_id = ${commentId} and `;
+    } else {
+      await sql`update comments set is_archived = true where id = ${commentId}`;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "comment delete success fully",
+    });
+  } catch (error) {
+    console.log("delete comment error", error);
+    return res.status(500).json({
+      success: false,
+      message: "something wend wrong",
+      error,
+    });
+  }
+};
