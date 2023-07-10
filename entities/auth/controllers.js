@@ -7,8 +7,8 @@ import jwt from "jsonwebtoken";
 export const createUser = async (req, res) => {
   try {
     const { username, password, email } = req.body;
-
-    if (!validator.isEmail(email)) {
+    console.log(username, password, email);
+    if (!email || !validator.isEmail(email)) {
       return res.status(400).json({
         success: false,
         message: "Invalid Email",
@@ -118,13 +118,22 @@ export const loginUser = async (req, res) => {
           message: "Incorrect password",
         });
       }
+      const { id, username, name, profile_picture, email } = user;
       const token = jwt.sign(
-        { id: user.id, iat: Math.floor(Date.now() / 1000) - 30 },
+        {
+          user_data: { id, username, name, profile_picture, email },
+          iat: Math.floor(Date.now() / 1000) - 30,
+        },
         process.env.TOKEN_SECRET,
         { expiresIn: 356 * 60 * 60 * 24 }
       );
 
-      res.cookie("token", token, { httpOnly: true });
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "strict",
+        // path: "/",
+        maxAge: 30 * 24 * 3600 * 1000,
+      });
 
       res.status(200).json({
         success: true,
@@ -134,6 +143,7 @@ export const loginUser = async (req, res) => {
           name: user.name,
           email: user.email,
           username: user.username,
+          token,
         },
       });
     });
@@ -142,6 +152,23 @@ export const loginUser = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error,
+    });
+  }
+};
+
+export const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({
+      success: true,
+      message: "Logout success fully",
+    });
+  } catch (error) {
+    console.log("logout error", error);
+    return res.status(500).json({
+      success: false,
+      message: "something went wrong",
+      error,
     });
   }
 };

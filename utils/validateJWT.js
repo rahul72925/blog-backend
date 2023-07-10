@@ -14,7 +14,7 @@ export const validateJWT = async (req, res, next) => {
     var decoded = jwt.verify(token, process.env.TOKEN_SECRET);
 
     if (decoded) {
-      req.userId = decoded.id;
+      req.userId = decoded.user_data.id;
       next();
     }
   } catch (err) {
